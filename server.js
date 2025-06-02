@@ -8,7 +8,7 @@ const apiCache = new NodeCache({ stdTTL: 3600 }); // 1 Stunde
 
 dotenv.config();
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const COC_API_KEY = process.env.COC_API_KEY;
 const CLAN_TAG = process.env.CLAN_TAG;
 
