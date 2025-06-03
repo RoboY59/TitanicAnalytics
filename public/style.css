@@ -122,6 +122,33 @@ td.zero {
 td.value {
   font-weight: bold;
 }
+.compare-table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.compare-table th:first-child,
+.compare-table td:first-child {
+  width: 2.2em;
+  min-width: 2em;
+  max-width: 2.5em;
+  text-align: center;
+}
+
+.compare-table th:last-child,
+.compare-table td:last-child {
+  width: 3.5em;
+  min-width: 2.5em;
+  max-width: 4em;
+  text-align: center;
+}
+
+.compare-table th,
+.compare-table td {
+  /* Optional: für bessere Lesbarkeit */
+  padding-left: 0.3em;
+  padding-right: 0.3em;
+}
 
 /* CWL Warlog Layout */
 .cwl-warlog-details-row {

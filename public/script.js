@@ -472,18 +472,19 @@ function renderClanVsClanTable(ourTop, oppMembers, opponentName) {
 
   // 2. Baue die Tabelle
   let table = `
-    <h3>Top 15 Vergleich: ${MY_CLAN_NAME} vs. ${opponentName || "?"}</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Unser Spieler (TH)</th>
-          <th>Gegner Spieler (TH)</th>
-          <th>Diff</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+  <h3>Top 15 Vergleich: ${MY_CLAN_NAME} vs. ${opponentName || "?"}</h3>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Unser Spieler (TH)</th>
+        <th>Gegner Spieler (TH)</th>
+        <th>Diff</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
   for (let i = 0; i < 15; i++) {
     const our = ourTop[i] || {};
     const opp = oppTop[i] || {};
