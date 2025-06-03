@@ -289,6 +289,8 @@ function getColorByValue(val) {
 async function renderMissingPlayers() {
   const data = await getMissingPlayers();
   const container = document.createElement("div");
+  container.className = "missing-players-container";
+
   container.style.marginTop = "2rem";
   container.innerHTML =
     "<h3>Spieler, die den Clan seit CWL-Start verlassen haben:</h3>";
@@ -597,25 +599,27 @@ async function renderClanWarlog(clanTag, container) {
               warSize = Math.ceil(warSize / 5) * 5;
 
               return `
-              <div style="background:#f7fafc; border-radius:8px; border:1px solid #e2e8f0; padding:0.7rem 1.2rem; margin-bottom:0.5rem;">
-                <div style="display:flex; align-items:center; justify-content:space-between; font-size:1.1em;">
-                  <span style="${homeStyle}">${homeName}</span>
-                  <span style="font-size:0.95em; color:#888;">${warSize} vs ${warSize}</span>
-                  <span style="${awayStyle}">${awayName}</span>
-                </div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.3em; font-size:1em;">
-                  <span>
-                    <b>${homeDestruction}%</b>
-                    <span style="color:#f6ad55; font-weight:bold; margin-left:0.5em;">${homeStars} ⭐</span>
-                  </span>
-                  <span style="font-size:1.3em; font-weight:bold; color:#444;">${resultIcon}</span>
-                  <span>
-                    <span style="color:#f6ad55; font-weight:bold; margin-right:0.5em;">${awayStars} ⭐</span>
-                    <b>${awayDestruction}%</b>
-                  </span>
-                </div>
-              </div>
-              `;
+  <div style="background:#f7fafc; border-radius:8px; border:1px solid #e2e8f0; padding:0.7rem 1.2rem; margin-bottom:0.5rem;">
+    <div class="cwl-warlog-details-row">
+      <span class="cwl-warlog-details-home" style="${homeStyle}">${homeName}</span>
+      <span class="cwl-warlog-details-center">
+        <span class="war-size" style="color:#888;">${warSize} vs ${warSize}</span>
+      </span>
+      <span class="cwl-warlog-details-away" style="${awayStyle}">${awayName}</span>
+    </div>
+    <div class="cwl-warlog-details-row">
+      <span class="cwl-warlog-details-home">
+        <b>${homeDestruction}%</b>
+        <span style="color:#f6ad55; font-weight:bold; margin-left:0.5em;">${homeStars} ⭐</span>
+      </span>
+      <span class="cwl-warlog-details-center"></span>
+      <span class="cwl-warlog-details-away">
+        <span style="color:#f6ad55; font-weight:bold; margin-right:0.5em;">${awayStars} ⭐</span>
+        <b>${awayDestruction}%</b>
+      </span>
+    </div>
+  </div>
+`;
             })
             .join("")}
         </div>
