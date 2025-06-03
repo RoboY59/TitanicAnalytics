@@ -8,6 +8,27 @@ const allTHs = [
 let cwlGroupCache = null;
 const MY_CLAN_TAG = "2Q2J2PPVR";
 const MY_CLAN_NAME = "TitanicImperium";
+// Hamburger-Menü für mobile Navigation
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.querySelector(".hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  if (hamburger && navLinks) {
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("open");
+      hamburger.setAttribute(
+        "aria-expanded",
+        navLinks.classList.contains("open") ? "true" : "false"
+      );
+    });
+    // Optional: Menü schließt bei Link-Klick (auf Mobil)
+    navLinks.addEventListener("click", (e) => {
+      if (e.target.tagName === "A" && navLinks.classList.contains("open")) {
+        navLinks.classList.remove("open");
+        hamburger.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+});
 
 // --- Caching-Helpers ---
 function setCache(key, data) {
@@ -78,7 +99,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 window.addEventListener("hashchange", route);
 
 async function buildDynamicNav() {
-  nav.innerHTML = `<a href="#overview">Übersicht</a>`;
+  const navLinks = nav.querySelector(".nav-links");
+  if (!navLinks) return;
+
+  navLinks.innerHTML = `<a href="#overview">Übersicht</a>`;
 
   try {
     cwlGroupCache = await getCWLGroupInfo();
@@ -87,17 +111,17 @@ async function buildDynamicNav() {
       (c) => c.tag.replace("#", "") === MY_CLAN_TAG
     );
     if (myClan) {
-      nav.innerHTML += `<a href="#clan/${MY_CLAN_TAG}">${myClan.name}</a>`;
+      navLinks.innerHTML += `<a href="#clan/${MY_CLAN_TAG}">${myClan.name}</a>`;
     }
     cwlGroupCache.clans
       .filter((c) => c.tag.replace("#", "") !== MY_CLAN_TAG)
       .forEach((clan) => {
-        nav.innerHTML += `<a href="#clan/${encodeURIComponent(
+        navLinks.innerHTML += `<a href="#clan/${encodeURIComponent(
           clan.tag.replace("#", "")
         )}">${clan.name}</a>`;
       });
   } catch (e) {
-    nav.innerHTML += `<span style="color:red;">(Fehler beim Laden der CWL)</span>`;
+    navLinks.innerHTML += `<span style="color:red;">(Fehler beim Laden der CWL)</span>`;
   }
 }
 
@@ -182,11 +206,14 @@ async function updateTable(data) {
   // Kopfzeile
   const theadRow = table.querySelector("thead tr");
   theadRow.innerHTML =
-    "<th>TH</th>" + clanList.map((n) => `<th>${n}</th>`).join("");
+    '<th class="th-label">TH</th>' +
+    clanList.map((n) => `<th>${n}</th>`).join("");
 
   // Für jede TH-Zeile
+  const isSmallScreen = window.innerWidth <= 600;
   allTHs.forEach((th) => {
-    let row = `<tr><td>${th}</td>`;
+    const thLabel = isSmallScreen && th === "Unknown" ? "???" : th;
+    let row = `<tr><td>${thLabel}</td>`;
     clanList.forEach((name) => {
       const val = data[th]?.[name] || 0;
       const color = getColorByValue(val);
@@ -282,6 +309,7 @@ async function renderMissingPlayers() {
 }
 
 // Detailansicht für einen Clan
+// Detailansicht für einen Clan
 async function renderClanDetail(clanTag) {
   app.innerHTML = `<div id="clan-header">Lade Clan-Daten...</div>`;
 
@@ -320,53 +348,112 @@ async function renderClanDetail(clanTag) {
       </div>
     `;
 
-    // Layout: links Mitgliederliste, rechts Vergleichstabelle
-    let html = `<div style="display:flex; gap:2rem; align-items:flex-start;">`;
+    // Responsive: untereinander auf kleinen Bildschirmen, nebeneinander auf großen
+    const isSmallScreen = window.innerWidth <= 900;
 
-    // 1. Mitgliederliste des angezeigten Clans (links, nach TH absteigend sortiert)
-    const sortedMembers = Array.isArray(clan.members)
-      ? [...clan.members].sort(
-          (a, b) => (b.townHallLevel || 0) - (a.townHallLevel || 0)
-        )
-      : [];
-    html += `<div style="flex:1; min-width:220px;">
-      <h3>Mitglieder (nur CWL-Aufstellung):</h3>
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr>
-            <th style="text-align:left;">Name</th>
-            <th>TH</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${sortedMembers
-            .map(
-              (m) => `
+    if (isSmallScreen) {
+      // 1. Vergleichstabelle (oben)
+      const compareDiv = document.createElement("div");
+      compareDiv.id = "compare-table";
+      compareDiv.innerHTML = "Lade Vergleich...";
+      app.appendChild(compareDiv);
+      renderClanVsClanTable(
+        sortedOurMembers.slice(0, 15),
+        clan.members,
+        clan.name
+      );
+
+      // 2. Kriegslog (darunter)
+      const warlogDiv = document.createElement("div");
+      warlogDiv.id = "warlog-container";
+      app.appendChild(warlogDiv);
+      await renderClanWarlog(clan.tag.replace("#", ""), warlogDiv);
+
+      // 3. Mitgliederliste (ganz unten)
+      const sortedMembers = Array.isArray(clan.members)
+        ? [...clan.members].sort(
+            (a, b) => (b.townHallLevel || 0) - (a.townHallLevel || 0)
+          )
+        : [];
+      const memberDiv = document.createElement("div");
+      memberDiv.innerHTML = `
+        <h3>Mitglieder (nur CWL-Aufstellung):</h3>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
             <tr>
-              <td style="text-align:left;">${m.name}</td>
-              <td style="text-align:center;">${m.townHallLevel || "?"}</td>
+              <th style="text-align:left;">Name</th>
+              <th>TH</th>
             </tr>
-          `
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>`;
+          </thead>
+          <tbody>
+            ${sortedMembers
+              .map(
+                (m) => `
+              <tr>
+                <td style="text-align:left;">${m.name}</td>
+                <td style="text-align:center;">${m.townHallLevel || "?"}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      `;
+      app.appendChild(memberDiv);
+    } else {
+      // Desktop: Vergleich & Mitglieder nebeneinander, Kriegslog darunter
+      // Desktop: Vergleich & Mitglieder nebeneinander, Kriegslog unter Vergleichstabelle (rechts)
+      let html = `<div style="display:flex; gap:2rem; align-items:flex-start;">`;
 
-    // 2. Vergleichstabelle (rechts, links IMMER unser Clan)
-    html += `<div style="flex:2; min-width:320px;" id="compare-table">Lade Vergleich...</div>`;
-    html += `</div>`;
-    app.innerHTML += html;
+      // Mitgliederliste (links)
+      const sortedMembers = Array.isArray(clan.members)
+        ? [...clan.members].sort(
+            (a, b) => (b.townHallLevel || 0) - (a.townHallLevel || 0)
+          )
+        : [];
+      html += `<div style="flex:1; min-width:220px;">
+  <h3>Mitglieder (nur CWL-Aufstellung):</h3>
+  <table style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="text-align:left;">Name</th>
+        <th>TH</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${sortedMembers
+        .map(
+          (m) => `
+        <tr>
+          <td style="text-align:left;">${m.name}</td>
+          <td style="text-align:center;">${m.townHallLevel || "?"}</td>
+        </tr>
+      `
+        )
+        .join("")}
+    </tbody>
+  </table>
+</div>`;
 
-    // Vergleichstabelle laden (unsere CWL-Aufstellung, Gegner = aktueller Clan)
-    renderClanVsClanTable(
-      sortedOurMembers.slice(0, 15),
-      clan.members,
-      clan.name
-    );
+      // Vergleichstabelle und Kriegslog (rechts, untereinander)
+      html += `<div style="flex:2; min-width:320px;">
+  <div id="compare-table">Lade Vergleich...</div>
+  <div id="warlog-container"></div>
+</div>`;
 
-    // Kriegslog anzeigen (NUR unter der Vergleichstabelle)
-    renderClanWarlog(clan.tag.replace("#", ""));
+      html += `</div>`;
+      app.innerHTML += html;
+
+      renderClanVsClanTable(
+        sortedOurMembers.slice(0, 15),
+        clan.members,
+        clan.name
+      );
+
+      // Kriegslog direkt unter der Vergleichstabelle (rechts)
+      const warlogDiv = document.getElementById("warlog-container");
+      await renderClanWarlog(clan.tag.replace("#", ""), warlogDiv);
+    }
   } else {
     document.getElementById("clan-header").textContent = "Clan nicht gefunden.";
   }
@@ -444,10 +531,16 @@ function renderClanVsClanTable(ourTop, oppMembers, opponentName) {
 }
 
 // Kriegslog für einen Clan anzeigen (Clash of Clans Stil, NUR unter Vergleichstabelle)
-async function renderClanWarlog(clanTag) {
-  const container = document.createElement("div");
+// Kriegslog für einen Clan anzeigen (optional: Zielcontainer)
+// Kriegslog für einen Clan anzeigen (optional: Zielcontainer)
+async function renderClanWarlog(clanTag, container) {
+  if (!container) {
+    container = document.createElement("div");
+    container.style.marginTop = "2rem";
+    app.appendChild(container);
+  }
   container.style.marginTop = "2rem";
-  container.innerHTML = "<h3>Vergangene CWL-Kriege:</h3>";
+  container.innerHTML = "<h3>Vergangene Kriege:</h3>";
 
   try {
     const data = await getClanWarlog(clanTag);
@@ -522,7 +615,7 @@ async function renderClanWarlog(clanTag) {
                   </span>
                 </div>
               </div>
-            `;
+              `;
             })
             .join("")}
         </div>
@@ -532,13 +625,5 @@ async function renderClanWarlog(clanTag) {
     }
   } catch (e) {
     container.innerHTML += "<i>Fehler beim Laden des Kriegslogs.</i>";
-  }
-
-  // Füge den Kriegslog NUR unter die Vergleichstabelle ein
-  const compareTable = document.getElementById("compare-table");
-  if (compareTable) {
-    compareTable.insertAdjacentElement("afterend", container);
-  } else {
-    app.appendChild(container);
   }
 }

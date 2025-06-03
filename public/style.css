@@ -19,8 +19,13 @@ nav {
   padding: 0 1rem;
   height: 60px;
   gap: 0.5rem;
+  position: relative;
 }
-
+nav .nav-links {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+}
 nav a {
   flex: 1 1 0;
   color: white;
@@ -35,7 +40,6 @@ nav a {
   position: relative;
   z-index: 1;
 }
-
 nav a.active,
 nav a:focus {
   background: linear-gradient(90deg, #38a169 0%, #3182ce 100%);
@@ -43,12 +47,28 @@ nav a:focus {
   box-shadow: 0 2px 8px rgba(56, 161, 105, 0.15);
   font-weight: bold;
 }
-
 nav a:hover:not(.active) {
   background: #4a5568;
   color: #fff;
 }
-
+nav .hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  margin-left: 0.5rem;
+}
+nav .hamburger span {
+  height: 4px;
+  width: 28px;
+  background: #fff;
+  margin: 4px 0;
+  border-radius: 2px;
+  transition: 0.3s;
+  display: block;
+}
 main {
   padding: 2rem;
 }
@@ -84,4 +104,104 @@ td.zero {
 }
 td.value {
   font-weight: bold;
+}
+
+/* Für mittlere Bildschirme: Schrift und Padding in der Navigation verkleinern */
+@media (max-width: 1050px) and (min-width: 701px) {
+  nav a {
+    font-size: 0.75em;
+    padding: 0.5em 0.3em;
+  }
+  main {
+    padding: 1rem;
+  }
+  table {
+    font-size: 0.95em;
+  }
+}
+
+/* Hamburger-Menü erst ab 600px */
+@media (max-width: 700px) {
+  header {
+    font-size: 1.1rem;
+    padding: 0.7rem;
+  }
+  nav {
+    flex-direction: row;
+    height: auto;
+    padding: 0 0.5rem;
+  }
+  nav .nav-links {
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: #2d3748;
+    display: none;
+    z-index: 10;
+    gap: 0;
+  }
+  nav .nav-links.open {
+    display: flex;
+  }
+  nav .hamburger {
+    display: flex;
+  }
+  nav a {
+    padding: 1em 0.5em;
+    font-size: 1em;
+    border-radius: 0;
+    border-bottom: 1px solid #444;
+    background: none;
+  }
+  nav a:last-child {
+    border-bottom: none;
+  }
+  main {
+    padding: 0.5rem;
+  }
+  table {
+    font-size: 0.9em;
+    margin-top: 0.5rem;
+  }
+  th,
+  td {
+    padding: 0.3rem;
+  }
+}
+
+/* Tabellen horizontal scrollbar auf kleinen Geräten */
+@media (max-width: 500px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    min-width: 400px;
+  }
+}
+@media (max-width: 1000px) {
+  #thTable th:not(:first-child) {
+    writing-mode: sideways-lr;
+    text-orientation: mixed;
+    font-size: 0.85em;
+    min-width: 16px;
+    max-width: 20px;
+    padding: 0.1em 0.05em;
+    white-space: nowrap;
+  }
+  #thTable th:first-child {
+    writing-mode: horizontal-tb;
+    font-size: 0.95em;
+    min-width: 18px;
+    max-width: 22px;
+    padding: 0.1em 0.1em;
+  }
+  #thTable td:first-child {
+    min-width: 18px;
+    max-width: 22px;
+    padding: 0.1em 0.1em;
+    font-size: 0.95em;
+    text-align: left;
+  }
 }
